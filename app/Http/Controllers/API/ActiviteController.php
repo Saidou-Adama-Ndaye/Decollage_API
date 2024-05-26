@@ -11,7 +11,13 @@ class ActiviteController extends Controller
     public function index()
     {
         $activites = Activite::with('elementsActivites')->get();
-        return response()->json($activites);
+
+        $response = [
+            'success' => true,
+            'activites' => $activites
+        ];
+
+        return response()->json($response);
     }
 
     public function show($id)
@@ -22,7 +28,12 @@ class ActiviteController extends Controller
             return response()->json(['message' => 'Cette activité n\'existe pas!'], 404);
         }
 
-        return response()->json($activite);
+        $response = [
+            'success' => true,
+            'activite' => $activite
+        ];
+
+        return response()->json($response);
     }
 
     public function store(Request $request)
@@ -37,7 +48,13 @@ class ActiviteController extends Controller
             'description' => $request->description,
         ]);
 
-        return response()->json(['activite' => $activite], 201);
+        $response = [
+            'success' => true,
+            'activite' => $activite,
+            'message' => 'L\'activité a été créée avec succès!'
+        ];
+
+        return response()->json($response, 201);
     }
 
     public function update(Request $request, $id)
@@ -58,7 +75,13 @@ class ActiviteController extends Controller
             'description' => $request->description,
         ]);
 
-        return response()->json(['activite' => $activite, 'message' => 'L\'activité a été mise à jour avec succès!']);
+        $response = [
+            'success' => true,
+            'activite' => $activite,
+            'message' => 'L\'activité a été mise à jour avec succès!'
+        ];
+
+        return response()->json($response);
     }
 
     public function destroy($id)
@@ -71,6 +94,11 @@ class ActiviteController extends Controller
 
         $activite->delete();
 
-        return response()->json(['message' => 'L\'activité a été supprimée avec succès!']);
+        $response = [
+            'success' => true,
+            'message' => 'L\'activité a été supprimée avec succès!'
+        ];
+
+        return response()->json($response);
     }
 }

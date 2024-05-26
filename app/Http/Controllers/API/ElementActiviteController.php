@@ -5,72 +5,115 @@ namespace App\Http\Controllers\API;
 use App\Models\ElementActivite;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Validator;
 
 class ElementActiviteController extends Controller
 {
     public function index()
     {
         $elementsActivite = ElementActivite::all();
-        return response()->json($elementsActivite);
-    }
 
-    public function store(Request $request)
-    {
-        $request->validate([
-            'activite_id' => 'required|integer',
-            'titre' => 'required|string',
-            'description' => 'required|string',
-        ]);
+        $response = [
+            'success' => true,
+            'elements_activite' => $elementsActivite
+        ];
 
-        $elementActivite = ElementActivite::create([
-            'activite_id' => $request->activite_id,
-            'titre' => $request->titre,
-            'description' => $request->description,
-        ]);
-
-        return response()->json(['element_activite' => $elementActivite], 201);
+        return response()->json($response);
     }
 
     public function show($id)
     {
         $elementActivite = ElementActivite::find($id);
+
         if (!$elementActivite) {
             return response()->json(['message' => 'L\'élément de l\'activité n\'existe pas'], 404);
         }
-        return response()->json($elementActivite);
+
+        $response = [
+            'success' => true,
+            'element_activite' => $elementActivite
+        ];
+
+        return response()->json($response);
     }
 
-    public function update(Request $request, $id)
+    public function store(Request $request)
     {
-        $elementActivite = ElementActivite::find($id);
-        if (!$elementActivite) {
-            return response()->json(['message' => 'L\'élément de l\'activité n\'existe pas'], 404);
-        }
-
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'activite_id' => 'required|integer',
             'titre' => 'required|string',
             'description' => 'required|string',
         ]);
 
-        $elementActivite->update([
-            'activite_id' => $request->activite_id,
-            'titre' => $request->titre,
-            'description' => $request->description,
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'status_code' => 400,
+                'status_message' => 'Erreur de Validation',
+                'errors' => $validator->errors(),
+            ], 400);
+        }
+
+        $elementActivite = ElementActivite::create($request->all());
+
+        $response = [
+            'success' => true,
+            'element_activite' => $elementActivite,
+            'message' => 'L\'élément de l\'activité a été créé avec succès!'
+        ];
+
+        return response()->json($response, 201);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $elementActivite = ElementActivite::find($id);
+
+        if (!$elementActivite) {
+            return response()->json(['message' => 'L\'élément de l\'activité n\'existe pas'], 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'activite_id' => 'required|integer',
+            'titre' => 'required|string',
+            'description' => 'required|string',
         ]);
 
-        return response()->json(['element_activite' => $elementActivite, 'message' => 'L\'élément de l\'activité a été mis à jour avec succès']);
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'status_code' => 400,
+                'status_message' => 'Erreur de Validation',
+                'errors' => $validator->errors(),
+            ], 400);
+        }
+
+        $elementActivite->update($request->all());
+
+        $response = [
+            'success' => true,
+            'element_activite' => $elementActivite,
+            'message' => 'L\'élément de l\'activité a été mis à jour avec succès!'
+        ];
+
+        return response()->json($response);
     }
 
     public function destroy($id)
     {
         $elementActivite = ElementActivite::find($id);
+
         if (!$elementActivite) {
             return response()->json(['message' => 'L\'élément de l\'activité n\'existe pas'], 404);
         }
 
         $elementActivite->delete();
 
-        return response()->json(['message' => 'L\'élément de l\'activité a été supprimé avec succès']);
+        $response = [
+            'success' => true,
+            'message' => 'L\'élément de l\'activité a été supprimé avec succès!'
+        ];
+
+        return response()->json($response);
     }
 }
